@@ -145,6 +145,8 @@
         <h1>UrbanBazaar</h1>
         <div class="nav-buttons">
             <a href="{% url 'logout' %}" class="nav-button">Logout</a>
+            <a href="{% url 'View_cart' %}" class="nav-button">Cart</a>
+
         </div>
     </div>
 
@@ -188,9 +190,19 @@
             <div class="product-info">
                 <h3>{{ product.name }}</h3>
                 <p class="price">₹{{ product.price }}</p>
+                <form action="{% url 'Add_to_cart' product.id %}" method="post"> 
+                {% csrf_token %} 
+                <button type="submit" class="add-to-cart">Add to Cart</button> 
+                </form>
             </div>
         </div>
         {% endfor %}
     </div>
 
 {% endblock %}
+
+
+
+
+
+
