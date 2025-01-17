@@ -48,6 +48,119 @@
         padding: 10px;
         border: 1px solid #ddd;
     }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    header {
+        background-color: #4CAF50;
+        color: white;
+        padding: 5px;
+        text-align: center;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    section {
+        background: white;
+        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        margin-bottom: 15px;
+        color: #4CAF50;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fefefe;
+    }
+
+    li:hover {
+        background-color: #f4f4f4;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table th, table td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    table th {
+        background-color: #f2f2f2;
+    }
+
+    .action-buttons a {
+        padding: 8px 12px;
+        text-decoration: none;
+        color: white;
+        border-radius: 4px;
+        margin-left: 5px;
+    }
+
+    .approve-button {
+        background-color: #f7f2f1;
+    }
+
+    .reject-button {
+        background-color: #dc3545;
+    }
+
+    .delete-button {
+        color: #dc3545;
+        text-decoration: none;
+    }
+
+    .delete-button:hover {
+        text-decoration: underline;
+    }
+
+    .pagination {
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .pagination a {
+        margin: 0 5px;
+        padding: 8px 12px;
+        text-decoration: none;
+        border: 1px solid #4CAF50;
+        border-radius: 4px;
+        color: #4CAF50;
+    }
+
+    .pagination a:hover {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+
 </style>
 {% endblock %}
 
@@ -55,12 +168,130 @@
 <div class="navbar">
     <h1>UrbanBazaar</h1>
     <div class="nav-buttons">
-        {% comment %} <a href="{% url 'home' %}" class="nav-button">Home</a> {% endcomment %}
-        <a href="{% url 'login' %}" class="nav-button">Login</a>
+        <a href="{% url 'logout' %}" class="nav-button">Logout</a>
     </div>
 </div>
 
-<div class="create-container">
-    <h1>Admin dashboard</h1>
+
+    <header>
+        <h1>Welcome, {{ name }} (Admin)</h1>
+    </header> 
+
+    <main>
+        <!-- Product List Section -->
+        <section>
+            <h2>Product List</h2>
+            <ul>
+                {% for product in products %}
+                    <li>
+                        {{ product.name }} - ${{ product.price }} (Vendor: {{ product.vendor.username }})
+                    </li>
+                {% empty %}
+                    <p>No products available.</p>
+                {% endfor %}
+            </ul>
+            <div class="pagination">
+                {% if products.has_previous %}
+                    <a href="?product_page={{ products.previous_page_number }}">Previous</a>
+                {% endif %}
+                Page {{ products.number }} of {{ products.paginator.num_pages }}
+                {% if products.has_next %}
+                    <a href="?product_page={{ products.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section>
+            <h2>Order History</h2>
+            {% if orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                            <th>Shipping Address</th>
+                            <th>Items</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.order_date }}</td>
+                                <td>{{ order.get_status_display }}</td>
+                                <td>{{ order.shipping_address }}</td>
+                                <td>
+                                    <ul>
+                                        {% for order_item in order_items %}
+                                            {% if order_item.order.id == order.id %}
+                                                <li>
+                                                    <strong>Product:</strong> {{ order_item.product.name }}<br>
+                                                    <strong>Quantity:</strong> {{ order_item.quantity }}<br>
+                                                    <strong>Price:</strong> ₹{{ order_item.price }}
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    {% if order.status != 'Canceled' %}
+                                        <a href="{% url 'Update_Order_Status' order.id %}" class="approve-button">Update Status</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    {% if orders.has_previous %}
+                        <a href="?order_page={{ orders.previous_page_number }}">Previous</a>
+                    {% endif %}
+                    Page {{ orders.number }} of {{ orders.paginator.num_pages }}
+                    {% if orders.has_next %}
+                        <a href="?order_page={{ orders.next_page_number }}">Next</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p>No orders found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Vendors Section -->
+        <section>
+            <h2>Vendors</h2>
+            <ul>
+                {% for vendor in vendors %}
+                    <li>
+                        {{ vendor.user.username }} - {{ vendor.user.email }}
+                    </li>
+                {% empty %}
+                    <p>No vendors registered.</p>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Customers Section -->
+        <section>
+            <h2>Customers</h2>
+            <ul>
+                {% for customer in customers %}
+                    <li>
+                        {{ customer.user.username }} - {{ customer.user.email }}
+                        {% comment %} <a href="{% url 'delete_customer' customer.id %}" class="delete-button">Delete</a> {% endcomment %}
+                    </li>
+                {% empty %}
+                    <p>No customers registered.</p>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+
    
 {% endblock %}
+
+
+
+
+
+
