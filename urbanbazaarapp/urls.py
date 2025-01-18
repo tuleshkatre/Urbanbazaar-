@@ -14,7 +14,11 @@ Add_to_cart ,
 View_cart ,
 Checkout ,
 Update_Order_Status ,
-Cart_quantity_manage
+Cart_quantity_manage ,
+ProductUpdate , 
+User_Pass_Change ,
+Order_History ,
+User_update
 )
 
 urlpatterns = [
@@ -31,6 +35,10 @@ urlpatterns = [
     path('Checkout/' , Checkout.as_view() , name= "Checkout"),
     path('Update_Order_Status/<int:id>/' , Update_Order_Status.as_view() , name= "Update_Order_Status"),
     path('Update_cart/<int:id>/' , Cart_quantity_manage.as_view() , name= "Update_cart"),
+    path('ProductUpdate/<int:id>/' , ProductUpdate.as_view() , name= "ProductUpdate"),
+    path('User_Pass_Change/<int:id>/' , User_Pass_Change.as_view() , name= "User_Pass_Change"),
+    path('Order_list/' , Order_History.as_view() , name= "Order_list"),
+    path('User_update/<int:id>/' , User_update.as_view() , name= "User_update"),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

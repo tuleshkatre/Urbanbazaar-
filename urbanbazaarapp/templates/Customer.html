@@ -16,9 +16,9 @@
             text-align: center;
         }
         .category-button {
-            padding: 10px 20px;
+            padding: 8px 16px;
             margin: 5px;
-            font-size: 14px;
+            font-size: 12px;
             color: white;
             background-color: #ff9900;
             text-decoration: none;
@@ -35,18 +35,18 @@
             text-align: center;
         }
         .search-bar input[type="text"] {
-            padding: 12px;
-            width: 50%;
+            padding: 10px;
+            width: 40%;
             border: 2px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
         }
         .search-bar input[type="submit"] {
-            padding: 12px 20px;
+            padding: 10px 16px;
             border: none;
             background-color: #ff9900;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             border-radius: 5px;
             cursor: pointer;
             margin-left: 10px;
@@ -58,7 +58,7 @@
         /* Products Grid */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 30px;
             margin: 20px 10px;
             padding: 0 20px;
@@ -78,7 +78,7 @@
         }
         .product-card img {
             width: 100%;
-            height: 250px;
+            height: 200px;
             object-fit: cover;
         }
         .product-card .product-info {
@@ -86,12 +86,12 @@
             text-align: center;
         }
         .product-card .product-info h3 {
-            font-size: 18px;
+            font-size: 16px;
             color: #333;
             margin-bottom: 10px;
         }
         .product-card .product-info .price {
-            font-size: 16px;
+            font-size: 14px;
             color: #ff9900;
             font-weight: bold;
             margin-bottom: 10px;
@@ -115,6 +115,8 @@
             padding: 15px 20px;
             box-sizing: border-box;
             margin-bottom: 20px;
+            height: 60px;
+
             }
 
         .nav-buttons {
@@ -135,6 +137,39 @@
             background-color: #777;
         }
 
+        /* Messages Styling */
+        .messages {
+            margin: 20px auto;
+            padding: 10px;
+            max-width: 800px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .message.success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .message.error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .message.info {
+            background-color: #d9edf7;
+            color: #31708f;
+            border: 1px solid #bce8f1;
+        }
+
 </style>
 
 {% endblock %}
@@ -144,8 +179,12 @@
     <div class="navbar">
         <h1>UrbanBazaar</h1>
         <div class="nav-buttons">
+        
+            <a href="{% url 'Order_list' %}" class="nav-button">Order_History</a>
+            <a href="{% url 'View_cart' %}" class="nav-button">Cart({{total_quantity}})</a>
+            <a href="{% url 'User_Pass_Change' request.user.id %}" class="nav-button">Change pass</a>
+            <a href="{% url 'User_update' request.user.id %}" class="nav-button">Profile update</a>
             <a href="{% url 'logout' %}" class="nav-button">Logout</a>
-            <a href="{% url 'View_cart' %}" class="nav-button">Cart</a>
 
         </div>
     </div>
@@ -173,36 +212,38 @@
     </form>
     <!-- Display flash messages -->
     {% if messages %}
-        <ul>
+        <div class="messages">
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% endif %}
 
     <!-- Featured Products Section -->
-    <div class="products-grid">
-        {% for product in products %}
-        <div class="product-card">
-            {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% endif %}
-            <div class="product-info">
-                <h3>{{ product.name }}</h3>
-                <p class="price">₹{{ product.price }}</p>
+<div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+        <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p class="price">₹{{ product.price }}</p>
+            
+            {% if product.stock_quantity > 0 %}
                 <form action="{% url 'Add_to_cart' product.id %}" method="post"> 
-                {% csrf_token %} 
-                <button type="submit" class="add-to-cart">Add to Cart</button> 
+                    {% csrf_token %} 
+                    <button type="submit" class="add-to-cart">Add to Cart</button> 
                 </form>
-            </div>
+            {% else %}
+                <p class="out-of-stock">Out of Stock</p>
+            {% endif %}
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
+</div>
 
 {% endblock %}
-
-
-
-
-
 

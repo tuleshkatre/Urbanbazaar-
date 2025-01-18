@@ -169,6 +169,8 @@
     <h1>UrbanBazaar</h1>
     <div class="nav-buttons">
         <a href="{% url 'logout' %}" class="nav-button">Logout</a>
+        <a href="{% url 'User_Pass_Change' request.user.id %}" class="nav-button">Change pass</a>
+        <a href="{% url 'User_update' request.user.id %}" class="nav-button">Profile update</a>
     </div>
 </div>
 
@@ -264,6 +266,8 @@
                 {% for vendor in vendors %}
                     <li>
                         {{ vendor.user.username }} - {{ vendor.user.email }}
+                        {% comment %} <a href="{% url 'delete_vendor' vendor.id %}?role={{ vendor.user.role }}" class="delete-button">Delete</a> {% endcomment %}
+                        <a href="#" class="delete-button">Delete</a>
                     </li>
                 {% empty %}
                     <p>No vendors registered.</p>
@@ -278,7 +282,7 @@
                 {% for customer in customers %}
                     <li>
                         {{ customer.user.username }} - {{ customer.user.email }}
-                        {% comment %} <a href="{% url 'delete_customer' customer.id %}" class="delete-button">Delete</a> {% endcomment %}
+                        <a href="#" class="delete-button">Delete</a>
                     </li>
                 {% empty %}
                     <p>No customers registered.</p>
@@ -289,9 +293,3 @@
 
    
 {% endblock %}
-
-
-
-
-
-
