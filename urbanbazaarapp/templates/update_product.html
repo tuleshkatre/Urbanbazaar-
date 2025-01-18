@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+<style>
+    .navbar {
+        background-color: #333;
+        color: white;
+        width: 100%;
+        padding: 15px 20px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-button {
+        color: white;
+        text-decoration: none;
+        padding: 5px 10px;
+        background-color: #555;
+        border-radius: 3px;
+        transition: background-color 0.3s ease;
+    }
+
+    .nav-button:hover {
+        background-color: #777;
+    }
+
+    .create-container {
+        width: 50%;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <h1>UrbanBazaar</h1>
+    <div class="nav-buttons">
+        <a href="{% url 'Vendor_dashboard' %}" class="nav-button">Vendor_dashboard</a>
+        {% comment %} <a href="{% url 'home' %}" class="nav-button">Home</a> {% endcomment %}
+        {% comment %} <a href="{% url 'login' %}" class="nav-button">Login</a> {% endcomment %}
+    </div>
+</div>
+
+<div class="create-container">
+    <h1>Product</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <table>
+            {% for field in form %}
+                <tr>
+                    <td>{{ field.label }}</td>
+                    <td>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div style="color: red;">
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2"><button type="submit">Submit</button></td>
+            </tr>
+        </table>
+
+        <!-- General form errors -->
+        {% if form.non_field_errors %}
+            <div style="color: red;">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

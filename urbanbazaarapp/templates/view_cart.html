@@ -2,6 +2,14 @@
 
 {% block extra_styles %}
 <style>
+    /* Welcome Message */
+    .welcome-message {
+        margin: 20px;
+        text-align: center;
+        font-size: 20px;
+        color: #131921;
+    }
+
     .navbar {
         background-color: #333;
         color: white;
@@ -9,6 +17,8 @@
         padding: 15px 20px;
         box-sizing: border-box;
         margin-bottom: 20px;
+        height: 60px;
+
     }
 
     .nav-buttons {
@@ -56,6 +66,40 @@
     .btn { padding: 10px 15px; background-color: #4CAF50; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; }
     .delete-btn { background-color: #f44336; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; }
     .back-btn { padding: 10px 15px; background-color: #777; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; }
+
+    /* Messages Styling */
+    .messages {
+        margin: 20px auto;
+        padding: 10px;
+        max-width: 800px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .message {
+        padding: 15px;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .message.success {
+        background-color: #dff0d8;
+        color: #3c763d;
+        border: 1px solid #d6e9c6;
+    }
+
+    .message.error {
+        background-color: #f2dede;
+        color: #a94442;
+        border: 1px solid #ebccd1;
+    }
+
+    .message.info {
+        background-color: #d9edf7;
+        color: #31708f;
+        border: 1px solid #bce8f1;
+    }
+
 </style>
 {% endblock %}
 
@@ -67,6 +111,16 @@
     </div>
 </div>
     <h2>Your Cart</h2>
+   <!-- Display flash messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     {% if cart_items %}
         <table>
@@ -75,6 +129,7 @@
                 <th>Quantity</th>
                 <th>Price</th>
                 <th>Total</th>
+                <th>Quantity</th>
             </tr>
             {% for item in cart_items %}
             <tr>
@@ -82,112 +137,6 @@
                 <td>{{ item.quantity }}</td>
                 <td>₹{{ item.product.price }}</td>
                 <td>₹{{ item.total_price}}</td>
-                <td>
-                    <form action="{% url 'Update_cart' item.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="delete-btn">Delete</button>
-                    </form>
-                </td>
-
-            </tr>
-            {% endfor %}
-        </table>
-        <br>
-        <a href="{% url 'Checkout' %}" class="btn">Proceed to Checkout</a>
-        <a href="{% url 'Customer_dashboard' %}" class="back-btn">Back to Products</a> 
-    {% else %}
-        <p>Your cart is empty.</p>
-        <a href="{% url 'Customer_dashboard' %}" class="back-btn">Back to Products</a>  
-    {% endif %}
-
-{% endblock %}
-
-
-
-
-{% comment %} 
-
-{% extends 'base.html' %}
-
-{% block extra_styles %}
-<style>
-    .navbar {
-        background-color: #333;
-        color: white;
-        width: 100%;
-        padding: 15px 20px;
-        box-sizing: border-box;
-        margin-bottom: 20px;
-    }
-
-    .nav-buttons {
-        display: flex;
-        gap: 10px;
-    }
-
-    .nav-button {
-        color: white;
-        text-decoration: none;
-        padding: 5px 10px;
-        background-color: #555;
-        border-radius: 3px;
-        transition: background-color 0.3s ease;
-    }
-
-    .nav-button:hover {
-        background-color: #777;
-    }
-
-    .create-container {
-        width: 50%;
-        margin: 0 auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        background-color: #f9f9f9;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
-        padding: 10px;
-        border: 1px solid #ddd;
-    }
-
-    body { font-family: Arial, sans-serif; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-    th { background-color: #f4f4f4; }
-    .btn { padding: 10px 15px; background-color: #4CAF50; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; }
-    .delete-btn { background-color: #f44336; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; }
-    .back-btn { padding: 10px 15px; background-color: #777; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="navbar">
-    <h1>UrbanBazaar</h1>
-    <div class="nav-buttons">
-        <a href="{% url 'logout' %}" class="nav-button">Logout</a>
-    </div>
-</div>
-    <h2>Your Cart</h2>
-
-    {% if cart_items %}
-        <table>
-            <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-            </tr>
-           {% for item in cart_items %}
-            <tr>
-                <td>{{ item.product.name }}</td>
                 <td>
                     <form action="{% url 'Update_cart' item.id %}" method="post" style="display: inline;">
                         {% csrf_token %}
@@ -199,14 +148,7 @@
                         <button type="submit" name="action" value="increase" class="quantity-btn">+</button>
                     </form>
                 </td>
-                <td>₹{{ item.product.price }}</td>
-                <td>₹{{ item.total_price }}</td>
-                <td>
-                    <form action="{% url 'Update_cart' item.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="quantity-btn" style="background-color: #f44336;">Delete</button>
-                    </form>
-                </td>
+
             </tr>
             {% endfor %}
         </table>
@@ -224,5 +166,3 @@
 
 
 
-
- {% endcomment %}

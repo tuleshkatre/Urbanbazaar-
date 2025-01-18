@@ -125,6 +125,9 @@
     <h1>UrbanBazaar</h1>
     <div class="nav-buttons">
         <a href="{% url 'logout' %}" class="nav-button">Logout</a>
+        <a href="{% url 'User_Pass_Change' request.user.id %}" class="nav-button">Change pass</a>
+        <a href="{% url 'User_update' request.user.id %}" class="nav-button">Profile update</a>
+
     </div>
 </div>
 
@@ -144,6 +147,8 @@
             <h3>{{ product.name }}</h3>
             <p>Price: ₹{{ product.price }}</p>
             <p>Stock: {{ product.stock_quantity }}</p>
+            <a href="{% url 'ProductUpdate' product.id %}" class="add-btn">Update Product</a>
+            
         </div>
         {% empty %}
         <p style="text-align:center;">No products added yet.</p>
