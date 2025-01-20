@@ -3,12 +3,13 @@
 {% block extra_styles %}
 <style>
     .navbar {
-        background-color: #333;
+        background-color: #131921;
         color: white;
         width: 100%;
         padding: 15px 20px;
         box-sizing: border-box;
         margin-bottom: 20px;
+        height:50px;
     }
 
     .nav-buttons {
@@ -55,13 +56,12 @@
 <div class="navbar">
     <h1>UrbanBazaar</h1>
     <div class="nav-buttons">
-        {% comment %} <a href="{% url 'home' %}" class="nav-button">Home</a> {% endcomment %}
-        {% comment %} <a href="{% url 'login' %}" class="nav-button">Login</a> {% endcomment %}
+        <a href="/" class="nav-button">Dashboard</a>
     </div>
 </div>
 
 <div class="create-container">
-    <h1>Signup</h1>
+    <h1>User Update</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <table>
@@ -95,4 +95,5 @@
         {% endif %}
     </form>
 </div>
+
 {% endblock %}

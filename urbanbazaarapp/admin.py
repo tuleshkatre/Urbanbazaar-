@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Profile , Product , Cart , CartItem , Order , OrderItem
+from .models import Profile , Product , Cart , CartItem , Order , OrderItem , UserOTP
 # Register your models here.
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ['user' , 'role']
+    list_display = ['id' , 'user' , 'role']
 
 
 @admin.register(Product)
@@ -26,4 +26,8 @@ class OrderItemAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['customer' , 'order_date' , 'status' , 'total_amount']
+
+@admin.register(UserOTP)
+class OtpAdmin(admin.ModelAdmin):
+    list_display = ['user' , 'otp' , 'otp_created_at']
 

@@ -2,13 +2,15 @@
 
 {% block extra_styles %}
 <style>
+
     .navbar {
-        background-color: #333;
+        background-color: #131921;
         color: white;
         width: 100%;
         padding: 15px 20px;
         box-sizing: border-box;
         margin-bottom: 20px;
+        height: 50px;
     }
 
     .nav-buttons {
@@ -48,14 +50,19 @@
         padding: 10px;
         border: 1px solid #ddd;
     }
-    
+
     .container {
         width: 90%;
         margin: 20px auto;
         max-width: 1200px;
     }
 
-    h1, h2 {
+    h1 {
+        text-align: center;
+        color: white;
+    }
+
+    h2 {
         text-align: center;
         color: #333;
     }
@@ -117,6 +124,7 @@
         border-radius: 4px;
         cursor: pointer;
     }
+
 </style>
 {% endblock %}
 
@@ -124,15 +132,16 @@
 <div class="navbar">
     <h1>UrbanBazaar</h1>
     <div class="nav-buttons">
-        <a href="{% url 'logout' %}" class="nav-button">Logout</a>
+    
         <a href="{% url 'User_Pass_Change' request.user.id %}" class="nav-button">Change pass</a>
         <a href="{% url 'User_update' request.user.id %}" class="nav-button">Profile update</a>
+        <a href="{% url 'logout' %}" class="nav-button">Logout</a>
 
     </div>
 </div>
 
 <div class="container">
-    <h1>Welcome, {{ name }} (Vendor)</h1>
+    <h2>Welcome, {{ name }} (Vendor)</h2>
 
     <!-- Products Section -->
     <h2>Your Products</h2>
@@ -155,4 +164,55 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Orders Section -->
+<div class="container">
+    <h2>Order History</h2>
+
+    {% if orders %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_date }}</td>
+                        <td class="order-status">{{ order.get_status_display }}</td>
+                        <td>₹{{ order.total_amount }}</td>
+                        <td>
+                            <ul class="items-list">
+                                {% for order_item in order_items %}
+                                    {% if order_item.order.id == order.id %}
+                                        <li class="order-details">
+                                            <strong>Product:</strong> {{ order_item.product.name }}<br>
+                                            <strong>Quantity:</strong> {{ order_item.quantity }}<br>
+                                            <strong>Item Price:</strong> ₹{{ order_item.price }}<br>
+                                        </li>
+                                    {% endif %}
+                                {% empty %}
+                                    <li>No items found for this order.</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+             
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-orders">No orders found.</p>
+    {% endif %}
+</div>
+
+
 {% endblock %}
+
+
+
+
