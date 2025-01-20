@@ -1,13 +1,23 @@
-from django.views import View
-from django.shortcuts import render , redirect
-from .forms import SignupForm , ProductForm , ProductUpdateForm , User_update_form
-from .models import Profile , User , Cart , CartItem , Product , Order , OrderItem 
-from django.contrib.auth import authenticate , login as auth_login , logout , update_session_auth_hash
-from django.core.paginator import Paginator
-from django.contrib import messages
+import random
 from datetime import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
+from django.utils.timezone import now
+from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from django.shortcuts import render , redirect
 from django.contrib.auth.forms import PasswordChangeForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import SignupForm , ProductForm , ProductUpdateForm , User_update_form
+from .models import Profile , User , Cart , CartItem , Product , Order , OrderItem , UserOTP
+from django.contrib.auth import authenticate , login as auth_login , logout , update_session_auth_hash
+
+
+class Home(View):  
+    def get(self, request): 
+        if request.user.is_authenticated:
+             return redirect('login')
+        return render(request , 'home.html')
 
 
 class SignupUser(View):  
@@ -16,7 +26,7 @@ class SignupUser(View):
             signup_form = SignupForm()
             return render(request, 'signup.html', {'form': signup_form})
         return redirect('login')
-        
+
     def post(self, request):  
         if not request.user.is_authenticated:
             signup_form = SignupForm(data = request.POST)
@@ -27,26 +37,6 @@ class SignupUser(View):
                 user.save()
                 return redirect('login')
             return render(request, 'signup.html', {'form': signup_form})
-        return redirect('login')
-
-
-class User_Pass_Change(View):
-    def get(self, request ,  *args, **kwargs): 
-        user_id = self.kwargs.get('id')
-        if request.user.is_authenticated and request.user.id == user_id :
-            user_form = PasswordChangeForm(user = request.user )
-            return render(request, 'changepass.html', {'form': user_form})
-        
-        return redirect('login')
-
-    def post(self, request ,  *args, **kwargs):  
-        user_id = self.kwargs.get('id')
-        if request.user.is_authenticated and request.user.id == user_id :
-            user_form = PasswordChangeForm(data=request.POST, user = request.user )
-            if user_form.is_valid():
-                user_form.save()
-                update_session_auth_hash(request , user_form.user)
-                return redirect('login')
         return redirect('login')
 
 
@@ -72,6 +62,54 @@ class User_update(View):
         return redirect('login')
 
 
+class User_Delete(View):
+    def get(self, request, id, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_superuser:
+            role = request.GET.get('role')
+            user_Profile = get_object_or_404(Profile, id=id , role = role)
+            user_account = user_Profile.user
+            user_account.delete()
+            return redirect('Admin_dashboard')
+         
+        return redirect('login')
+
+
+class User_Pass_Change(View):
+    def get(self, request ,  *args, **kwargs): 
+        user_id = self.kwargs.get('id')
+        if request.user.is_authenticated and request.user.id == user_id :
+            user_form = PasswordChangeForm(user = request.user )
+            return render(request, 'changepass.html', {'form': user_form})
+        
+        return redirect('login')
+
+    def post(self, request ,  *args, **kwargs):  
+        user_id = self.kwargs.get('id')
+        if request.user.is_authenticated and request.user.id == user_id :
+            user_form = PasswordChangeForm(data=request.POST, user = request.user )
+            if user_form.is_valid():
+                user_form.save()
+                update_session_auth_hash(request , user_form.user)
+                return redirect('login')
+        return redirect('login')
+
+
+def generate_and_send_otp(user):
+    otp = random.randint(100000, 999999)
+    otp_info, _ = UserOTP.objects.get_or_create(user=user)
+    otp_info.otp = otp
+    otp_info.otp_created_at = now()
+    otp_info.save()
+
+    send_mail(
+        'Your OTP Code',
+        f'Your OTP is {otp}. It will expire in 10 minutes.',
+        'noreply@example.com',
+        [user.email],
+        fail_silently=False,
+    )
+
+
 class Userlogin(View):
     def get(self, request): 
         if request.user.is_authenticated:
@@ -81,6 +119,8 @@ class Userlogin(View):
     def post(self , request):
         email = request.POST.get('email')
         password = request.POST.get('password')
+        otp = request.POST.get('otp')
+
         if email and password:
                 try:
                     user = User.objects.get(email = email)
@@ -93,6 +133,30 @@ class Userlogin(View):
                     return redirect('redirect_view')
                 else:
                     return render(request, 'login.html', {'error': 'Invalid email or password.'})
+
+        # OTP-based login
+        if email and not otp:
+            try:
+                user = User.objects.filter(email=email).first() 
+                if user:
+                    generate_and_send_otp(user)
+                    return render(request, 'otp_verify.html', {'email': email, 'message': f"OTP sent to your email :- {user.email}"})
+                else:
+                    return render(request, 'login.html', {'error': 'No user found with this email.'})
+            except Exception as e:
+                return render(request, 'login.html', {'error': str(e)})
+
+        if email and otp:
+            try:
+                user = User.objects.filter(email=email).first() 
+                otp_info = user.otp_info  
+                if otp_info.is_otp_valid() and str(otp_info.otp) == otp:
+                    auth_login(request, user)
+                    return redirect('login')
+                else:
+                    return render(request, 'otp_verify.html', {'email': email, 'error': 'Invalid or expired OTP.'})
+            except (User.DoesNotExist):
+                return render(request, 'otp_verify.html', {'email': email, 'error': 'Invalid request.'})
         return render(request, 'login.html', {'error': 'Please enter both email and password.'})
 
 
@@ -153,11 +217,14 @@ class Vendor_dashboard(View):
             try:
                 profile = Profile.objects.get(user=request.user)
                 if profile.role == 'Vendor':
-
+                    orders = Order.objects.filter(orderitem__product__vendor = request.user).distinct()
+                    order_items = OrderItem.objects.filter(order__in = orders)
                     products = Product.objects.filter(vendor = request.user)
                     return render(request, 'Vendor.html', {
                                     'name': request.user.username,
-                                    'products': products
+                                    'products': products,
+                                    'orders':orders,
+                                    'order_items': order_items
                                 })
                 else:
                     return redirect('login')
@@ -333,7 +400,7 @@ class Checkout(View):
         else:
             messages.error(request, "You need to log in to proceed with the checkout.")
             return redirect('login')
-
+        
 
 class Update_Order_Status(View):
     def get(self, request, *args, **kwargs):
@@ -399,6 +466,29 @@ class Order_History(View):
                 })
         
         return redirect('login')
+
+
+# # ////
+# class SignupUser(View):  
+#     def get(self, request): 
+#         if not request.user.is_authenticated:
+#             signup_form = SignupForm()
+#             return render(request, 'signup.html', {'form': signup_form})
+#         return redirect('login')
+
+#     def post(self, request):  
+#         if not request.user.is_authenticated:
+#             signup_form = SignupForm(data = request.POST)
+#             if signup_form.is_valid():
+#                 user = signup_form.save()
+#                 role = signup_form.cleaned_data['role']
+#                 is_approved = True if role == 'Customer' else False
+#                 Profile.objects.create(user = user, role = role , is_approved = is_approved)
+#                 user.save()
+#                 return redirect('login')
+#             return render(request, 'signup.html', {'form': signup_form})
+#         return redirect('login')
+
 
 
 

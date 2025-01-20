@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 
 class Profile(models.Model):
@@ -7,10 +8,21 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User , on_delete = models.CASCADE)
     role = models.CharField(max_length = 20 , choices = ROLE_CHOICE)
+    # is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 
+
+class UserOTP(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name= "otp_info",blank=True, null=True)
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_created_at = models.DateTimeField(blank=True, null=True)
+
+    def is_otp_valid(self):
+        if self.otp_created_at:
+            return (now() - self.otp_created_at).total_seconds() <= 600  
+        return False
 
 class Product(models.Model):
 

@@ -18,10 +18,14 @@ Cart_quantity_manage ,
 ProductUpdate , 
 User_Pass_Change ,
 Order_History ,
-User_update
+User_update ,
+User_Delete ,
+Home 
 )
 
 urlpatterns = [
+
+    path('' , Home.as_view() , name= "Home"),
     path('signup/' , SignupUser.as_view() , name= "signup"),
     path('login/' , Userlogin.as_view() , name= "login"),
     path('product/' , ProductAdd.as_view() , name= "product"),
@@ -39,9 +43,12 @@ urlpatterns = [
     path('User_Pass_Change/<int:id>/' , User_Pass_Change.as_view() , name= "User_Pass_Change"),
     path('Order_list/' , Order_History.as_view() , name= "Order_list"),
     path('User_update/<int:id>/' , User_update.as_view() , name= "User_update"),
+    path('User_Delete/<int:id>/' , User_Delete.as_view() , name= "User_Delete"),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
 
 
 
